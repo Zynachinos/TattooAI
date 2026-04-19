@@ -1,4 +1,4 @@
-package com.example.tattoo_ai
+package com.app.TattooAI
 
 import io.flutter.embedding.android.FlutterActivity
 

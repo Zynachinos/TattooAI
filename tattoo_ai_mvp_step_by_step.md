@@ -91,7 +91,7 @@ Ergebnis im Repo:
 
 ### 1.1 Firebase-Projekt anlegen
 
-Status: Active
+Status: Done
 
 Du machst:
 - In Firebase Console ein neues Projekt für Tattoo AI anlegen
@@ -117,7 +117,7 @@ Done wenn:
 
 ### 1.2 Firebase Auth Provider vorbereiten
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Email/Password in Firebase Auth aktivieren
@@ -175,7 +175,7 @@ Done wenn:
 
 ### 2.1 Flutter Firebase Core Setup anlegen
 
-Status: Locked
+Status: Active
 
 Du machst:
 - Firebase-Projektdaten (aus 1.1) bereitstellen
