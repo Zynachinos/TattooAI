@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'app.dart';
+import 'features/auth/auth_service.dart';
 import 'features/billing/billing_service.dart';
 import 'firebase_options.dart';
 
@@ -9,8 +10,11 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // RevenueCat – no user ID yet; synced with Firebase UID after login (Phase 3)
+  // RevenueCat – UID wird über AuthService.init() nach Login gesetzt
   await BillingService.instance.configure();
+
+  // Auth-State Listener starten (verbindet Firebase UID mit RevenueCat)
+  AuthService.instance.init();
 
   runApp(const TattooAiApp());
 }

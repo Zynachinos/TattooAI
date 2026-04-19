@@ -246,7 +246,7 @@ Done wenn:
 
 ### 3.1 Email/Password Auth Flow bauen
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Firebase Auth Provider muss aktiv sein (1.2)
@@ -263,7 +263,7 @@ Done wenn:
 
 ### 3.2 Google Login Flow bauen
 
-Status: Locked
+Status: Active
 
 Du machst:
 - Firebase Google Provider muss aktiv sein
