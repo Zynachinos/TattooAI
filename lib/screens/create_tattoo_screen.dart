@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import '../features/billing/billing_service.dart';
+import '../shared/widgets/loading_indicator.dart';
 
 class CreateTattooScreen extends StatelessWidget {
   const CreateTattooScreen({super.key});
@@ -65,11 +66,7 @@ class CreateTattooScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: billing.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
+                      ? const LoadingIndicator(size: 20)
                       : const Text(
                           'Generate Tattoo',
                           style: TextStyle(fontSize: 16),

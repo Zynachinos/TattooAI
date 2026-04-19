@@ -200,7 +200,7 @@ Done wenn:
 
 ### 2.2 Grundstruktur nach Feature-Bereichen anlegen
 
-Status: Active
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung
