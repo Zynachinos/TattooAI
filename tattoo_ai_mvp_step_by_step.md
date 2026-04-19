@@ -139,19 +139,26 @@ Done wenn:
 Status: Locked
 
 Du machst:
-- RevenueCat Account / Projekt anlegen
-- App für Android anlegen (iOS kommt später)
-- Entitlement `pro` anlegen
-- Offering für die Paywall anlegen
-- API Keys notieren
+- RevenueCat Account / Projekt anlegen (app.revenuecat.com)
+- Android App anlegen → Package: `com.app.TattooAI`
+- Entitlement anlegen → ID exakt: `TattooAI Pro`
+- Offering anlegen → 3 Packages: `lifetime`, `yearly`, `monthly`
+- Android API Key (sieht aus wie `goog_xxxxx`) notieren
+- Key in `lib/core/config/app_config.dart` bei `_androidKey` eintragen
 
 KI macht:
-- Dokumentation der benötigten Keys und späteren Code-Stellen
+- Nichts mehr — Code ist bereits fertig (siehe 4.1–4.3)
+
+Code-Status (bereits umgesetzt, wartet nur auf echten API Key):
+- `lib/core/config/app_config.dart` → Platzhalter `_androidKey` vorhanden
+- `lib/features/billing/billing_service.dart` → `BillingService` vollständig implementiert
+- `pubspec.yaml` → `purchases_flutter` + `purchases_ui_flutter` bereits drin
 
 Done wenn:
 - RevenueCat Projekt existiert
-- Entitlement `pro` existiert
-- Offering angelegt
+- Entitlement `TattooAI Pro` existiert
+- Offering mit `lifetime` / `yearly` / `monthly` angelegt
+- Echter Android API Key in `app_config.dart` eingetragen
 
 ---
 
@@ -175,16 +182,15 @@ Done wenn:
 
 ### 2.1 Flutter Firebase Core Setup anlegen
 
-Status: Active
+Status: Done
 
-Du machst:
-- Firebase-Projektdaten (aus 1.1) bereitstellen
-- `google-services.json` für Android generieren und bereitstellen
-
-KI macht:
-- Firebase Packages in `pubspec.yaml` einplanen (`firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage`)
-- App-Initialisierung in `main.dart` strukturieren
-- `google-services.json` einbinden
+Code-Status:
+- `pubspec.yaml` → `firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage` eingetragen
+- `lib/firebase_options.dart` → Android-Config mit Projekt `tattooai-3ca74`
+- `lib/main.dart` → `Firebase.initializeApp()` vor `runApp()`
+- `android/app/google-services.json` → vorhanden (in `.gitignore`)
+- `android/settings.gradle.kts` + `android/app/build.gradle.kts` → google-services Plugin eingebunden
+- `applicationId` auf `com.app.TattooAI` gefixt (matcht Firebase-Registrierung)
 
 Done wenn:
 - Firebase im Flutter-Projekt initialisiert wird
@@ -194,7 +200,7 @@ Done wenn:
 
 ### 2.2 Grundstruktur nach Feature-Bereichen anlegen
 
-Status: Locked
+Status: Active
 
 Du machst:
 - Nichts außer Aktivierung
@@ -296,16 +302,31 @@ Done wenn:
 Status: Locked
 
 Du machst:
-- Public SDK Key (Android) lokal bereitstellen
+- Echten Android API Key aus RevenueCat Dashboard in `lib/core/config/app_config.dart` → `_androidKey` eintragen
+- Voraussetzung: 1.3 muss Done sein
 
 KI macht:
-- RevenueCat Package integrieren
-- Initialisierung anbinden
-- Login / Logout mit Firebase UID koppeln
+- Nichts mehr — Code ist fertig
+
+Code-Status (bereits vollständig implementiert):
+- `lib/features/billing/billing_service.dart` → `BillingService` (Singleton, ChangeNotifier)
+  - `configure({String? firebaseUid})` → RevenueCat init, wird in `main.dart` aufgerufen
+  - `login(uid)` / `logout()` → sync mit Firebase UID (wird von AuthService in Phase 3 aufgerufen)
+  - `refreshCustomerInfo()` → Customer Info neu laden
+  - `restorePurchases()` → Käufe wiederherstellen
+  - `isPro` getter → prüft Entitlement `TattooAI Pro`
+  - `presentPaywall()` → Paywall immer zeigen
+  - `presentPaywallIfNeeded()` → Paywall nur wenn kein Pro
+  - `presentCustomerCenter()` → Abo verwalten / Support
+- `lib/main.dart` → `BillingService.instance.configure()` nach Firebase init
+- `lib/app.dart` → `ListenableBuilder` auf `BillingService.instance`
+
+Offener Punkt nach 1.3:
+- `_androidKey` in `app_config.dart` auf echten `goog_xxxxx` Key setzen
 
 Done wenn:
-- RevenueCat initialisiert
-- Firebase UID mit RevenueCat App User ID verbunden
+- Echter API Key eingetragen
+- App initialisiert RevenueCat ohne Fehler
 
 ---
 
@@ -314,15 +335,21 @@ Done wenn:
 Status: Locked
 
 Du machst:
-- Entitlement `pro` muss in RevenueCat existieren
+- Nichts außer Aktivierung (Code ist fertig)
 
 KI macht:
-- Customer Info laden
-- `pro` Status im App-State abbilden
-- UI für gesperrt / freigeschaltet umsetzen
+- Nichts mehr
+
+Code-Status (bereits vollständig implementiert):
+- `BillingService.isPro` → prüft `entitlements.active['TattooAI Pro']`
+- `_handleCustomerInfoUpdate()` → aktualisiert State bei jedem SDK-Event
+- `lib/screens/create_tattoo_screen.dart` → `_ProBanner` wenn kein Pro, `ListenableBuilder` reagiert live
+- Generate-Button ist hinter Paywall-Gate (`_onGenerateTapped`)
 
 Done wenn:
-- App weiß, ob der User Zugriff hat
+- Echter API Key in `app_config.dart` (aus 4.1)
+- Entitlement `TattooAI Pro` im RevenueCat Dashboard existiert
+- App erkennt Pro-Status korrekt
 
 ---
 
@@ -331,15 +358,24 @@ Done wenn:
 Status: Locked
 
 Du machst:
-- Produkte / Packages in RevenueCat vorbereiten
+- Offering mit Packages (`lifetime`, `yearly`, `monthly`) im RevenueCat Dashboard anlegen
+- Paywall im Dashboard designen (RevenueCat Paywall Builder)
 
 KI macht:
-- Paywall-Screen einbauen
-- Purchase und Restore Hooks vorbereiten
-- Navigation nach erfolgreichem Unlock
+- Nichts mehr — Code ist fertig
+
+Code-Status (bereits vollständig implementiert):
+- `BillingService.presentPaywall()` → zeigt native RevenueCat Paywall (kein eigener Screen nötig)
+- `BillingService.presentPaywallIfNeeded()` → zeigt nur wenn kein Pro
+- `BillingService.presentCustomerCenter()` → Abo verwalten, lädt CustomerInfo nach Restore
+- `BillingService.restorePurchases()` → Käufe wiederherstellen
+- Paywall-Gate im Generate-Button in `create_tattoo_screen.dart`
+- `_ProBanner` mit Upgrade-Button in der UI
 
 Done wenn:
-- User kommt aus der App in den Kauf-Flow
+- Offerings im RevenueCat Dashboard angelegt
+- Paywall aus App öffnet sich korrekt
+- Kauf und Restore funktionieren (Sandbox-Test auf Android)
 
 ---
 

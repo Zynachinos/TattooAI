@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
+import '../features/billing/billing_service.dart';
 
 class CreateTattooScreen extends StatelessWidget {
   const CreateTattooScreen({super.key});
@@ -9,65 +11,92 @@ class CreateTattooScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Tattoo AI'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.manage_accounts_outlined),
+            tooltip: 'Abonnement verwalten',
+            onPressed: () => BillingService.instance.presentCustomerCenter(),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Create your perfect tattoo',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            
-            // Base Image Placeholder
-            _buildSection(
-              title: 'Base Image (Required)',
-              child: _buildPlaceholderBox('Tap to upload Base Image'),
-            ),
-            const SizedBox(height: 16),
-            
-            // Reference Image Placeholder
-            _buildSection(
-              title: 'Reference Tattoo (Optional)',
-              child: _buildPlaceholderBox('Tap to upload Reference Image'),
-            ),
-            const SizedBox(height: 16),
-            
-            // Tattoo Description
-            _buildSection(
-              title: 'Tattoo Description (Optional)',
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Describe your dream tattoo...',
-                  border: OutlineInputBorder(),
+      body: ListenableBuilder(
+        listenable: BillingService.instance,
+        builder: (context, _) {
+          final billing = BillingService.instance;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!billing.isPro) _ProBanner(billing: billing),
+                if (!billing.isPro) const SizedBox(height: 16),
+                const Text(
+                  'Create your perfect tattoo',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
-                maxLines: 3,
-              ),
+                const SizedBox(height: 24),
+                _buildSection(
+                  title: 'Base Image (Required)',
+                  child: _buildPlaceholderBox('Tap to upload Base Image'),
+                ),
+                const SizedBox(height: 16),
+                _buildSection(
+                  title: 'Reference Tattoo (Optional)',
+                  child: _buildPlaceholderBox('Tap to upload Reference Image'),
+                ),
+                const SizedBox(height: 16),
+                _buildSection(
+                  title: 'Tattoo Description (Optional)',
+                  child: const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Describe your dream tattoo...',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                FilledButton(
+                  onPressed: billing.isLoading
+                      ? null
+                      : () => _onGenerateTapped(context, billing),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: billing.isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Generate Tattoo',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                ),
+              ],
             ),
-            const SizedBox(height: 32),
-            
-            // Generate Button
-            FilledButton(
-              onPressed: () {
-                // TODO: Implement generation logic
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Generation not implemented yet')),
-                );
-              },
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text(
-                'Generate Tattoo',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
+    );
+  }
+
+  Future<void> _onGenerateTapped(
+      BuildContext context, BillingService billing) async {
+    if (!billing.isPro) {
+      final result = await billing.presentPaywallIfNeeded();
+      if (result != PaywallResult.purchased &&
+          result != PaywallResult.restored &&
+          result != PaywallResult.notPresented) {
+        return;
+      }
+    }
+    // TODO Phase 6: actual generation logic
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Generation starts here (Phase 6)')),
     );
   }
 
@@ -75,10 +104,9 @@ class CreateTattooScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        ),
+        Text(title,
+            style:
+                const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
         const SizedBox(height: 8),
         child,
       ],
@@ -100,6 +128,39 @@ class CreateTattooScreen extends StatelessWidget {
             const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
             const SizedBox(height: 8),
             Text(text, style: const TextStyle(color: Colors.grey)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Pro Banner ───────────────────────────────────────────────────────────────
+
+class _ProBanner extends StatelessWidget {
+  const _ProBanner({required this.billing});
+  final BillingService billing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            const Icon(Icons.lock_outline, size: 20),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'TattooAI Pro freischalten, um Tattoos zu generieren',
+                style: TextStyle(fontSize: 13),
+              ),
+            ),
+            TextButton(
+              onPressed: () => billing.presentPaywall(),
+              child: const Text('Upgrade'),
+            ),
           ],
         ),
       ),

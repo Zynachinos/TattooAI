@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'features/billing/billing_service.dart';
 import 'screens/create_tattoo_screen.dart';
 
 class TattooAiApp extends StatelessWidget {
@@ -15,7 +16,10 @@ class TattooAiApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const CreateTattooScreen(),
+      home: ListenableBuilder(
+        listenable: BillingService.instance,
+        builder: (context, _) => const CreateTattooScreen(),
+      ),
       debugShowCheckedModeBanner: false,
     );
   }
