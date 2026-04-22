@@ -334,7 +334,7 @@ Done wenn:
 
 ### 4.1 RevenueCat Flutter SDK integrieren
 
-Status: Active
+Status: Done
 
 Du machst:
 - Echten Android API Key aus RevenueCat Dashboard in `lib/core/config/app_config.dart` → `_androidKey` eintragen
@@ -367,7 +367,7 @@ Done wenn:
 
 ### 4.2 Entitlement State im Client abbilden
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung (Code ist fertig)

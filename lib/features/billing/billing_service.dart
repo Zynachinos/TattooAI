@@ -78,6 +78,23 @@ class BillingService extends ChangeNotifier {
 
   // ─── Purchases ──────────────────────────────────────────────────────────────
 
+  Future<bool> purchasePackage(Package package) async {
+    _setLoading(true);
+    try {
+      final result = await Purchases.purchase(PurchaseParams.package(package));
+      _handleCustomerInfoUpdate(result.customerInfo);
+      return result.customerInfo.entitlements.active.containsKey(AppConfig.entitlementId);
+    } on PlatformException catch (e) {
+      final code = PurchasesErrorHelper.getErrorCode(e);
+      if (code != PurchasesErrorCode.purchaseCancelledError) {
+        _setError('Kauf fehlgeschlagen: ${e.message}');
+      }
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> restorePurchases() async {
     _setLoading(true);
     try {
