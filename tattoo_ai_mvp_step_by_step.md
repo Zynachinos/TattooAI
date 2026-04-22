@@ -279,7 +279,7 @@ Done wenn:
 
 ### 3.3 Google Login Flow bauen
 
-Status: Active
+Status: Done
 
 Du machst:
 - Firebase Google Provider muss aktiv sein
@@ -334,7 +334,7 @@ Done wenn:
 
 ### 4.1 RevenueCat Flutter SDK integrieren
 
-Status: Locked
+Status: Active
 
 Du machst:
 - Echten Android API Key aus RevenueCat Dashboard in `lib/core/config/app_config.dart` → `_androidKey` eintragen
