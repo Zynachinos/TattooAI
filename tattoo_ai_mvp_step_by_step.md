@@ -261,25 +261,60 @@ Done wenn:
 
 ---
 
-### 3.2 Google Login Flow bauen
+### 3.2 Auth Gate + Splash Screen
+
+Status: Done
+
+KI macht:
+- `isInitialized` Flag auf `AuthService` – gesetzt nach erstem `authStateChanges`-Event
+- `app.dart` zeigt Splash → Auth Screen → Main App (kein Flackern, kein direkter Zugriff ohne Login)
+- User muss immer eingeloggt sein bevor er die App nutzen kann
+
+Done wenn:
+- App zeigt Splash beim Start
+- Ohne Login landet man immer auf dem Auth Screen
+- Mit Login landet man direkt auf dem Create Screen
+
+---
+
+### 3.3 Google Login Flow bauen
 
 Status: Active
 
 Du machst:
 - Firebase Google Provider muss aktiv sein
-- OAuth-Konfiguration in Firebase/Google Cloud abschließen
+- SHA-1 Fingerprint in Firebase Console eingetragen
+- Frische `google-services.json` heruntergeladen nach SHA-1 Eintrag
 
 KI macht:
-- Google Login im Flutter-Code integrieren
+- Google Login im Flutter-Code integrieren (bereits implementiert)
 - User auf Firebase UID mappen
-- Fehlerfälle sauber behandeln
 
 Done wenn:
 - Google Login funktioniert
 
 ---
 
-### 3.3 Sign in with Apple als iOS-Handoff dokumentieren
+### 3.4 Nutzer-Rolle in Firestore anlegen
+
+Status: Done
+
+KI macht:
+- Bei Registrierung (Email/Google) wird `users/{uid}` Dokument in Firestore angelegt
+- Felder: `email`, `displayName`, `role: 'user'`, `createdAt`, `updatedAt`
+- `role` wird nur beim ersten Anlegen gesetzt, nie überschrieben (Admin-Schutz)
+- `AuthService.isAdmin` Getter → prüft ob `role == 'admin'`
+- Admin-User bypassen später die Paywall (für Tests)
+- RevenueCat bleibt zuständig für `pro`-Entitlement
+
+Done wenn:
+- Registrierung legt Firestore-Dokument an
+- `isAdmin` Getter funktioniert
+- Rolle bleibt erhalten wenn User sich erneut einloggt
+
+---
+
+### 3.5 Sign in with Apple als iOS-Handoff dokumentieren
 
 Status: Locked
 
@@ -683,13 +718,11 @@ Done wenn:
 
 ## Aktueller Fokus
 
-**Nächster Schritt: 1.1 ist Active.**
+**Aktiver Schritt: 3.3 – Google Login testen.**
 
-Was die KI jetzt von dir braucht, sobald du Firebase angelegt hast:
-- `projectId`
-- `appId` (Android App in Firebase registriert)
-- `apiKey`
-- `storageBucket`
-- `messagingSenderId`
+Was du jetzt brauchst:
+- SHA-1 Fingerprint in Firebase Console eintragen (Project Settings → Android App → Fingerprints)
+- Frische `google-services.json` herunterladen und in `android/app/` ersetzen
+- App starten und Google Login testen
 
-Dann: `google-services.json` herunterladen und ins Repo geben → 2.1 kann starten.
+Danach: 3.3 auf `Done` setzen → 1.3 (RevenueCat) aktivieren.

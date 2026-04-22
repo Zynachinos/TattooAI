@@ -4,6 +4,7 @@ import 'features/auth/auth_service.dart';
 import 'features/auth/presentation/auth_screen.dart';
 import 'features/billing/billing_service.dart';
 import 'screens/create_tattoo_screen.dart';
+import 'shared/widgets/loading_indicator.dart';
 
 class TattooAiApp extends StatelessWidget {
   const TattooAiApp({super.key});
@@ -18,11 +19,37 @@ class TattooAiApp extends StatelessWidget {
         listenable: Listenable.merge(
             [AuthService.instance, BillingService.instance]),
         builder: (context, _) {
-          if (!AuthService.instance.isLoggedIn) {
+          final auth = AuthService.instance;
+
+          if (!auth.isInitialized) {
+            return const _SplashScreen();
+          }
+          if (!auth.isLoggedIn) {
             return const AuthScreen();
           }
           return const CreateTattooScreen();
         },
+      ),
+    );
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.auto_fix_high, size: 56, color: cs.primary),
+            const SizedBox(height: 24),
+            const LoadingIndicator(size: 28),
+          ],
+        ),
       ),
     );
   }
