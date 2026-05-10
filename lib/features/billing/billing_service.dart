@@ -16,11 +16,6 @@ class BillingService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  bool get isPro =>
-      _customerInfo?.entitlements.active
-          .containsKey(AppConfig.entitlementId) ??
-      false;
-
   // ─── Init ───────────────────────────────────────────────────────────────────
 
   Future<void> configure({String? firebaseUid}) async {
@@ -143,6 +138,22 @@ class BillingService extends ChangeNotifier {
     await RevenueCatUI.presentCustomerCenter(
       onRestoreCompleted: (info) => _handleCustomerInfoUpdate(info),
     );
+  }
+
+  // ─── Debug ───────────────────────────────────────────────────────────────────
+
+  bool _debugProOverride = false;
+
+  bool get isPro =>
+      _debugProOverride ||
+      (_customerInfo?.entitlements.active
+              .containsKey(AppConfig.entitlementId) ??
+          false);
+
+  /// Only callable in debug builds. Bypasses paywall gate for UI testing.
+  Future<void> debugSkipPaywall() async {
+    _debugProOverride = true;
+    notifyListeners();
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────

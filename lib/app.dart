@@ -3,6 +3,7 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/presentation/auth_screen.dart';
 import 'features/billing/billing_service.dart';
+import 'features/billing/presentation/paywall_gate_screen.dart';
 import 'screens/create_tattoo_screen.dart';
 import 'shared/widgets/loading_indicator.dart';
 
@@ -21,11 +22,17 @@ class TattooAiApp extends StatelessWidget {
         builder: (context, _) {
           final auth = AuthService.instance;
 
-          if (!auth.isInitialized) {
+          final billing = BillingService.instance;
+
+          if (!auth.isInitialized || billing.isLoading) {
             return const _SplashScreen();
           }
           if (!auth.isLoggedIn) {
             return const AuthScreen();
+          }
+          // Admin users bypass the paywall gate (for testing)
+          if (!billing.isPro && !auth.isAdmin) {
+            return const PaywallGateScreen();
           }
           return const CreateTattooScreen();
         },

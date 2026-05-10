@@ -470,7 +470,7 @@ Done wenn:
 
 ### 6.1 Create Screen auf echten Input umbauen
 
-Status: Active
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung
