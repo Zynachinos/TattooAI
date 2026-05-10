@@ -488,7 +488,7 @@ Done wenn:
 
 ### 6.2 Validierungslogik umsetzen
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung
@@ -504,7 +504,7 @@ Done wenn:
 
 ### 6.3 Generation Request im Client anlegen
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung
@@ -522,7 +522,7 @@ Done wenn:
 
 ### 7.1 `createGeneration` Function bauen
 
-Status: Locked
+Status: Active
 
 Du machst:
 - Nötige Projekt- und Billing-Voraussetzungen in Firebase bereitstellen

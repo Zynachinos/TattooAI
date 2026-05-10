@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../features/billing/billing_service.dart';
+import '../features/tattoo_generation/generation_service.dart';
+import '../features/tattoo_generation/data/generation_request_model.dart';
 
 // ─── Colors (matching paywall) ────────────────────────────────────────────────
 
@@ -28,7 +30,8 @@ class _CreateTattooScreenState extends State<CreateTattooScreen> {
   final _promptController = TextEditingController();
   File? _baseImage;
   File? _referenceImage;
-  bool _isGenerating = false;
+
+  bool get _isGenerating => GenerationService.instance.state.isActive;
 
   @override
   void dispose() {
@@ -115,15 +118,13 @@ class _CreateTattooScreenState extends State<CreateTattooScreen> {
       await billing.presentPaywallIfNeeded();
       return;
     }
-    // TODO Phase 6.3: upload images, create Firestore request, call createGeneration function
-    setState(() => _isGenerating = true);
-    await Future.delayed(const Duration(seconds: 1)); // placeholder
-    if (mounted) {
-      setState(() => _isGenerating = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Generation kommt in Phase 7')),
-      );
-    }
+    await GenerationService.instance.generate(
+      baseImage: _baseImage!,
+      referenceImage: _referenceImage,
+      prompt: _promptController.text.trim().isEmpty
+          ? null
+          : _promptController.text.trim(),
+    );
   }
 
   @override
@@ -149,9 +150,11 @@ class _CreateTattooScreenState extends State<CreateTattooScreen> {
         ],
       ),
       body: ListenableBuilder(
-        listenable: BillingService.instance,
+        listenable: Listenable.merge(
+            [BillingService.instance, GenerationService.instance]),
         builder: (context, _) {
           final billing = BillingService.instance;
+          final gen = GenerationService.instance.state;
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
@@ -262,6 +265,68 @@ class _CreateTattooScreenState extends State<CreateTattooScreen> {
                   ),
 
                 const SizedBox(height: 32),
+
+                // ── Upload progress ──────────────────────────────────────────
+                if (gen.isUploading) ...[
+                  Row(
+                    children: [
+                      const Text('Uploading…',
+                          style: TextStyle(
+                              color: _textSecondary, fontSize: 12)),
+                      const Spacer(),
+                      Text(
+                        '${(gen.uploadProgress * 100).toInt()}%',
+                        style: const TextStyle(
+                            color: _accentCoral,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: gen.uploadProgress,
+                      backgroundColor: _bgCard,
+                      color: _accentRed,
+                      minHeight: 4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ── Status label ─────────────────────────────────────────────
+                if (gen.status == GenerationStatus.queued ||
+                    gen.status == GenerationStatus.generating)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: _accentCoral)),
+                        SizedBox(width: 10),
+                        Text('Generating your tattoo…',
+                            style: TextStyle(
+                                color: _textSecondary, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+
+                // ── Error ────────────────────────────────────────────────────
+                if (gen.error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'Error: ${gen.error}',
+                      style: const TextStyle(
+                          color: _accentRed, fontSize: 12),
+                    ),
+                  ),
 
                 // ── Generate Button ──────────────────────────────────────────
                 SizedBox(
