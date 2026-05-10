@@ -418,7 +418,7 @@ Done wenn:
 
 ### 5.1 Firestore Collections und Datenmodell im Code verankern
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung
@@ -435,7 +435,7 @@ Done wenn:
 
 ### 5.2 Storage-Pfade und Upload-Konzept umsetzen
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Nichts außer Aktivierung
@@ -452,7 +452,7 @@ Done wenn:
 
 ### 5.3 Firebase Functions Projektstruktur vorbereiten
 
-Status: Locked
+Status: Done
 
 Du machst:
 - Firebase CLI Login und lokales Functions-Setup anstößen, falls nötig
@@ -470,7 +470,7 @@ Done wenn:
 
 ### 6.1 Create Screen auf echten Input umbauen
 
-Status: Locked
+Status: Active
 
 Du machst:
 - Nichts außer Aktivierung

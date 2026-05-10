@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../features/billing/billing_service.dart';
-import '../features/billing/presentation/paywall_screen.dart';
 import '../shared/widgets/loading_indicator.dart';
 
 class CreateTattooScreen extends StatelessWidget {
@@ -83,9 +82,7 @@ class CreateTattooScreen extends StatelessWidget {
   Future<void> _onGenerateTapped(
       BuildContext context, BillingService billing) async {
     if (!billing.isPro) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const PaywallScreen()),
-      );
+      await BillingService.instance.presentPaywallIfNeeded();
       return;
     }
     // TODO Phase 6: actual generation logic
@@ -153,9 +150,7 @@ class _ProBanner extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const PaywallScreen()),
-            ),
+              onPressed: () => BillingService.instance.presentPaywallIfNeeded(),
               child: const Text('Upgrade'),
             ),
           ],

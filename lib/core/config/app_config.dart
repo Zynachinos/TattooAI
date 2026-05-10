@@ -14,7 +14,8 @@ class AppConfig {
 
   // RevenueCat offering/product identifiers
   static const String offeringDefault = 'default';
-  static const String productLifetime = 'lifetime';
-  static const String productYearly = 'yearly';
-  static const String productMonthly = 'monthly';
+  static const String productWeekly = 'weekly';
+
+  // Credits granted per weekly subscription period
+  static const int creditsPerWeek = 6;
 }

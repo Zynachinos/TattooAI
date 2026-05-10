@@ -58,6 +58,7 @@ class AuthService extends ChangeNotifier {
         'email': user.email,
         'displayName': user.displayName,
         'role': 'user',
+        'credits': 0, // set to 6 by server when subscription starts
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });

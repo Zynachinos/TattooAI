@@ -7,18 +7,12 @@ import '../../../core/config/app_config.dart';
 
 const Color _bgDark = Color(0xFF0D0D0D);
 const Color _bgCard = Color(0xFF1A1A1A);
-const Color _bgCardSelected = Color(0xFF2A1215);
 const Color _accentRed = Color(0xFFE84A5E);
 const Color _accentCoral = Color(0xFFFF6B6B);
 const Color _textPrimary = Color(0xFFF5F0EB);
 const Color _textSecondary = Color(0xFFA09890);
 const Color _textMuted = Color(0xFF6B6360);
-const Color _badgeBg = Color(0xFFE8384A);
 const Color _dividerColor = Color(0xFF2A2520);
-
-// ─── Plan Types ───────────────────────────────────────────────────────────────
-
-enum _Plan { monthly, yearly, lifetime }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -30,7 +24,6 @@ class PaywallScreen extends StatefulWidget {
 }
 
 class _PaywallScreenState extends State<PaywallScreen> {
-  _Plan _selected = _Plan.yearly;
   Offerings? _offerings;
   bool _isLoading = false;
 
@@ -47,33 +40,22 @@ class _PaywallScreenState extends State<PaywallScreen> {
     } catch (_) {}
   }
 
-  Package? _pkg(_Plan plan) {
+  Package? get _weeklyPackage {
     final current = _offerings?.current;
     if (current == null) return null;
-    final id = switch (plan) {
-      _Plan.monthly => AppConfig.productMonthly,
-      _Plan.yearly => AppConfig.productYearly,
-      _Plan.lifetime => AppConfig.productLifetime,
-    };
     try {
-      return current.availablePackages.firstWhere((p) => p.identifier == id);
+      return current.availablePackages
+          .firstWhere((p) => p.identifier == AppConfig.productWeekly);
     } catch (_) {
       return null;
     }
   }
 
-  String _price(_Plan plan) {
-    final p = _pkg(plan)?.storeProduct.priceString;
-    if (p != null) return p;
-    return switch (plan) {
-      _Plan.monthly => '\$6.99',
-      _Plan.yearly => '\$39.99',
-      _Plan.lifetime => '\$89.99',
-    };
-  }
+  String get _price =>
+      _weeklyPackage?.storeProduct.priceString ?? 'CHF 5.00';
 
   Future<void> _subscribe() async {
-    final pkg = _pkg(_selected);
+    final pkg = _weeklyPackage;
     if (pkg == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Produkte werden noch geladen…')),
@@ -124,39 +106,27 @@ class _PaywallScreenState extends State<PaywallScreen> {
               const SizedBox(height: 12),
               _headline(),
               const SizedBox(height: 28),
-              const _FeatureRow(icon: '∞', title: 'Unlimited generations', subtitle: 'NO DAILY CAPS'),
+              const _FeatureRow(
+                icon: '6',
+                title: '6 Credits per week',
+                subtitle: 'ONE GENERATION = ONE CREDIT',
+              ),
               const SizedBox(height: 16),
-              const _FeatureRow(icon: 'HD', title: 'HD export, no watermark', subtitle: 'PRINT-READY 4096PX'),
+              const _FeatureRow(
+                icon: 'HD',
+                title: 'HD export, no watermark',
+                subtitle: 'PRINT-READY 4096PX',
+              ),
               const SizedBox(height: 16),
-              const _FeatureRow(icon: '⚡', title: 'Priority queue', subtitle: '3× FASTER · FLAGSHIP MODEL'),
+              const _FeatureRow(
+                icon: '⚡',
+                title: 'Priority queue',
+                subtitle: '3× FASTER · FLAGSHIP MODEL',
+              ),
               const SizedBox(height: 16),
               const _FeatureRow(icon: '×', title: 'Cancel anytime'),
-              const SizedBox(height: 28),
-              _PlanCard(
-                title: 'Monthly',
-                subtitle: '/ MONTH',
-                price: _price(_Plan.monthly),
-                isSelected: _selected == _Plan.monthly,
-                onTap: () => setState(() => _selected = _Plan.monthly),
-              ),
-              const SizedBox(height: 18),
-              _PlanCard(
-                title: 'Yearly',
-                subtitle: '/ YEAR · 3-DAY TRIAL',
-                price: _price(_Plan.yearly),
-                badge: 'SAVE 72%',
-                originalPrice: '\$143.88',
-                isSelected: _selected == _Plan.yearly,
-                onTap: () => setState(() => _selected = _Plan.yearly),
-              ),
-              const SizedBox(height: 18),
-              _PlanCard(
-                title: 'Lifetime',
-                subtitle: 'ONE-TIME',
-                price: _price(_Plan.lifetime),
-                isSelected: _selected == _Plan.lifetime,
-                onTap: () => setState(() => _selected = _Plan.lifetime),
-              ),
+              const SizedBox(height: 32),
+              _priceCard(),
               const SizedBox(height: 28),
               _ctaButton(),
               const SizedBox(height: 16),
@@ -183,7 +153,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
           onPressed: _isLoading ? null : _restore,
           child: const Text(
             'RESTORE',
-            style: TextStyle(color: _textMuted, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1),
+            style: TextStyle(
+                color: _textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1),
           ),
         ),
       ],
@@ -196,7 +170,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
         children: [
           TextSpan(
             text: 'Go Pro.\n',
-            style: TextStyle(color: _textPrimary, fontSize: 36, fontWeight: FontWeight.bold, height: 1.15),
+            style: TextStyle(
+                color: _textPrimary,
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                height: 1.15),
           ),
           TextSpan(
             text: 'Draw ',
@@ -210,7 +188,69 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
           TextSpan(
             text: 'your\nnext piece.',
-            style: TextStyle(color: _textPrimary, fontSize: 36, fontWeight: FontWeight.bold, height: 1.15),
+            style: TextStyle(
+                color: _textPrimary,
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                height: 1.15),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _priceCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _dividerColor),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                'Weekly',
+                style: TextStyle(
+                    color: _textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 2),
+              Text(
+                '6 CREDITS INCLUDED',
+                style: TextStyle(
+                    color: _accentCoral,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                _price,
+                style: const TextStyle(
+                    color: _textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                '/ WEEK',
+                style: TextStyle(
+                    color: _textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5),
+              ),
+            ],
           ),
         ],
       ),
@@ -218,11 +258,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Widget _ctaButton() {
-    final label = switch (_selected) {
-      _Plan.yearly => 'Start 3-day free trial',
-      _Plan.monthly => 'Subscribe Monthly',
-      _Plan.lifetime => 'Buy Lifetime Access',
-    };
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -231,16 +266,24 @@ class _PaywallScreenState extends State<PaywallScreen> {
         style: FilledButton.styleFrom(
           backgroundColor: _accentRed,
           disabledBackgroundColor: _accentRed.withValues(alpha: 0.6),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
         ),
         child: _isLoading
             ? const SizedBox(
                 height: 22,
                 width: 22,
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.5, color: Colors.white),
               )
-            : Text(label, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Colors.white)),
+            : const Text(
+                'Subscribe Weekly',
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              ),
       ),
     );
   }
@@ -251,12 +294,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
       children: [
         TextButton(
           onPressed: () {},
-          child: const Text('TERMS', style: TextStyle(color: _textMuted, fontSize: 11, letterSpacing: 1)),
+          child: const Text('TERMS',
+              style: TextStyle(
+                  color: _textMuted, fontSize: 11, letterSpacing: 1)),
         ),
         const SizedBox(width: 16),
         TextButton(
           onPressed: () {},
-          child: const Text('PRIVACY', style: TextStyle(color: _textMuted, fontSize: 11, letterSpacing: 1)),
+          child: const Text('PRIVACY',
+              style: TextStyle(
+                  color: _textMuted, fontSize: 11, letterSpacing: 1)),
         ),
       ],
     );
@@ -278,137 +325,36 @@ class _FeatureRow extends StatelessWidget {
         Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: _bgCard, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: _bgCard, borderRadius: BorderRadius.circular(8)),
           alignment: Alignment.center,
-          child: Text(icon, style: const TextStyle(color: _accentCoral, fontSize: 16, fontWeight: FontWeight.bold)),
+          child: Text(icon,
+              style: const TextStyle(
+                  color: _accentCoral,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold)),
         ),
         const SizedBox(width: 14),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(color: _textPrimary, fontSize: 15, fontWeight: FontWeight.w500)),
+            Text(title,
+                style: const TextStyle(
+                    color: _textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500)),
             if (subtitle != null)
               Text(
                 subtitle!,
-                style: const TextStyle(color: _textMuted, fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 1),
+                style: const TextStyle(
+                    color: _textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1),
               ),
           ],
         ),
       ],
-    );
-  }
-}
-
-// ─── Plan Card ────────────────────────────────────────────────────────────────
-
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({
-    required this.title,
-    required this.subtitle,
-    required this.price,
-    required this.isSelected,
-    required this.onTap,
-    this.badge,
-    this.originalPrice,
-  });
-
-  final String title;
-  final String subtitle;
-  final String price;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final String? badge;
-  final String? originalPrice;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected ? _bgCardSelected : _bgCard,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isSelected ? _accentRed : _dividerColor,
-                width: isSelected ? 1.5 : 1,
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            child: Row(
-              children: [
-                _radio(),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title,
-                          style: const TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-                      Text(subtitle,
-                          style: const TextStyle(
-                              color: _textMuted, fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 0.5)),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (originalPrice != null)
-                      Text(
-                        originalPrice!,
-                        style: const TextStyle(
-                          color: _textMuted,
-                          fontSize: 12,
-                          decoration: TextDecoration.lineThrough,
-                          decorationColor: _textMuted,
-                        ),
-                      ),
-                    Text(price,
-                        style: const TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (badge != null)
-          Positioned(
-            top: -11,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: _badgeBg, borderRadius: BorderRadius.circular(4)),
-              child: Text(
-                badge!,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _radio() {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: isSelected ? _accentRed : _textMuted, width: 2),
-      ),
-      child: isSelected
-          ? Center(
-              child: Container(
-                width: 12,
-                height: 12,
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: _accentRed),
-              ),
-            )
-          : null,
     );
   }
 }
